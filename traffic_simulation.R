@@ -12,10 +12,10 @@
 # - - - - - -       - - - - - - - -
 #  WEST ->->
 # ￣￣￣￣￣| S ¦ ∧ |￣￣￣￣￣￣￣
-#           | O ¦ | |
-#           | U ¦   |
-#           | T ¦   |
-#           | H ¦   |
+#          | O ¦ | |
+#          | U ¦   |
+#          | T ¦   |
+#          | H ¦   |
 
 ## ASSUMING 60 CARS PER HOUR TRAVEL FROM EACH DIRECTION THROUGH THE INTERSECTION
 ## WE WOULD EXPECT THAT THERE WOULD BE 1 CAR PER MINUTE OR 1 / 60 CARS PER 
