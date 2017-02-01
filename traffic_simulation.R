@@ -22,12 +22,13 @@
 ## SECOND - 
 
 num_cars <- data.frame(arriving = c(0, 0, 0, 0), passing_thru = c(0, 0, 0, 0),
-                       in_queue = c(0, 0, 0, 0), light = c("green", "green", 
-                                                           "red", "red"), 
-                       cars_per_second = c(30 / 60, 30 / 60, 30 / 60, 30 / 60))
+                       in_queue = c(0, 0, 0, 0), total_weight_sec = c(0, 0, 0, 0), 
+                       light = c("green", "green", "red", "red"), 
+                       cars_per_second = c(20 / 60, 20 / 60, 20 / 60, 20 / 60))
 
 num_cars$z_val <- qnorm(num_cars$cars_per_second)
 
+is_yellow <- 0
 secs_of_light <- 0
 
 for(i in 1:3600){
@@ -37,13 +38,13 @@ for(i in 1:3600){
                 if(samp <= num_cars$z_val[j]){ ## CAR ARRIVES
                         num_cars$arriving[j] <- num_cars$arriving[j] + 1
                         
-                        if(num_cars$light[j] == "green"){ ## LIGHT IS GREEN
+                        if(num_cars$light[j] == "green" & is_yellow == 0){ ## LIGHT IS GREEN
                                 num_cars$passing_thru[j] <- num_cars$passing_thru[j] + 1
-                        } else {
+                        } else { ## LIGHT IS RED
                                 num_cars$in_queue[j] <- num_cars$in_queue[j] + 1
                         }
                 } else { ## NO CAR ARRIVES
-                        if(num_cars$light[j] == "green") { ## LIGHT IS GREEN
+                        if(num_cars$light[j] == "green" & is_yellow == 0) { ## LIGHT IS GREEN
                                 if(num_cars$in_queue[j] > 0){
                                         num_cars$passing_thru[j] <- num_cars$passing_thru[j] + 1
                                         num_cars$in_queue[j] <- num_cars$in_queue[j] - 1
@@ -51,18 +52,17 @@ for(i in 1:3600){
                         }
                 }
                 
-                #print(paste("Second: ", i, "; Color of Light: ", light, 
-                #            "; Number of Cars Arrived: ", num_cars_ariving, 
-                #            "; Number of Cars Passed Through: ", num_cars_passing, 
-                #            "; Number of Cars in Queue: ", num_cars_in_queue, sep = ""))
+                num_cars$total_weight_sec[j] <- num_cars$total_weight_sec[j] + num_cars$in_queue[j]
                 
         }
         
         secs_of_light <- secs_of_light + 1 ## INCREASE HOW MANY SECONDS LIGHT HAS BEEN AT CURRENT LEVEL
         
-        if(secs_of_light >= 30){
+        if (secs_of_light >= 90 & secs_of_light < 93){
+                is_yellow <- 1
+        } else if (secs_of_light >= 93){
                 secs_of_light <- 0
-                
+                is_yellow <- 0
                 num_cars$light <- ifelse(num_cars$light == "green", "red", "green")
         }
 }
