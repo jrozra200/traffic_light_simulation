@@ -24,8 +24,9 @@
 traffic_sim_static_light_length <- function(green_red_length_seconds = 90, 
                                             yellow_length_seconds = 3, 
                                             length_of_simulation_in_seconds = 3600, 
-                                            cars_per_second = c(20/60, 20/60, 
-                                                                20/60, 20/60)) {
+                                            cars_per_second = c(1/60, 1/60, 
+                                                                1/60, 1/60),
+                                            min_secs_between_cars = 1) {
         
         ######################################
         ######################################
@@ -40,7 +41,9 @@ traffic_sim_static_light_length <- function(green_red_length_seconds = 90,
         ## length_of_simulation_in_seconds IS HOW LONG THE SIMULATION RUNS FOR 
         ## IN SECONDS; cars_per_second IS THE AVERAGE NUMBER OF CARS THAT ARRIVE
         ## AT THE INTERSECTION EACH SECOND. 20 CARS PER HOUR TRANSLATES TO 1/3 
-        ## (OR 20/60) CARS PER SECOND. ALL OF THESE CAN BE CHANGED AS NEEDED.
+        ## (OR 20/60) CARS PER SECOND. min_secs_between_cars IS THE MINIMUM TIME
+        ## THAT MUST PASS FOR ANOTHER CAR TO ARRIVE. ALL OF THESE CAN BE CHANGED 
+        ## AS NEEDED.
         
         ############################################################
         ## INITIALIZE THE DATA AT THE BEGINNING OF THE SIMULATION ##
@@ -51,7 +54,11 @@ traffic_sim_static_light_length <- function(green_red_length_seconds = 90,
                                in_queue = c(0, 0, 0, 0), ## NO CARS ARE IN QUEUE AT ANY ROAD YET
                                total_wait_sec = c(0, 0, 0, 0), ## THERE HAS BEEN NO WAIT TIME YET
                                light = c("green", "green", "red", "red"), 
-                               cars_per_second = cars_per_second)
+                               cars_per_second = cars_per_second,
+                               secs_since_last_car = c(0, 0, 0, 0)) ## SECONDS SINCE LAST CAR ARRIVED
+        
+        ## NOTE: CARS WILL NOT BE ALLOWED TO ARRIVE IN BACK-TO-BACK SECONDS. 
+        ## THERE MUST BE AT LEAST ONE SECOND BETWEEN ARRIVING CARS 
         
         ## I AM SAMPLING FROM A NORMAL DISTRIBUTION FOR THE SIMULATION - 
         ## DEPENDING ON HOW MANY CARS PER SECOND ARE SPECIFIED, WE NEED TO KNOW
@@ -83,9 +90,15 @@ traffic_sim_static_light_length <- function(green_red_length_seconds = 90,
                         ## A CAR APPROACHING. DEPENDING ON THE COLOR OF THE 
                         ## LIGHT IN THAT DIRECTION AND THE AMOUNT OF CARS IN 
                         ## QUEUE, DIFFERENT OUTCOMES ARE PRODUCED.
-                        if(samp <= num_cars$z_val[j]){ ## CAR ARRIVES
+                        if((samp <= num_cars$z_val[j]) & 
+                           (num_cars$secs_since_last_car[j] >= 
+                            min_secs_between_cars)){ ## CAR ARRIVES
                                 ## ADD ONE TO THE NUMBER OF CARS ARRIVING
                                 num_cars$arriving[j] <- num_cars$arriving[j] + 1
+                                
+                                ## CAR ARRIVED THIS SECOND, RESET THE 
+                                ## secs_since_last_car BACK TO 0
+                                num_cars$secs_since_last_car[j] <- 0
                                 
                                 if(num_cars$light[j] == "green" & 
                                    is_yellow == 0){ ## & THE LIGHT IS GREEN
@@ -111,6 +124,10 @@ traffic_sim_static_light_length <- function(green_red_length_seconds = 90,
                                                                 1)
                                         }
                                 }
+                                
+                                ## ENSURE THE secs_since_last_car FLAG IS INCREMENTED
+                                num_cars$secs_since_last_car[j] <- (
+                                        num_cars$secs_since_last_car[j] + 1)
                         }
                         
                         ## FOR EACH CAR IN THE QUEUE THIS SECOND, ADD ONE SECOND
